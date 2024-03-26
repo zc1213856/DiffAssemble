@@ -2,6 +2,9 @@ import timm
 import torch
 import torch.nn as nn
 from pytorch3d.transforms import matrix_to_quaternion
+# from ..rotation_conversions import matrix_to_quaternion
+
+
 from torch import Tensor
 from torch.nn import functional as F
 from torch_geometric.nn import GraphNorm

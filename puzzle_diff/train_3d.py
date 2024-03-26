@@ -7,11 +7,15 @@ import torch_geometric
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "lib"))
 
+sys.path.append('.')
+
 import argparse
 import math
 import random
 import string
 import warnings
+
+import torch
 
 import matplotlib
 import pytorch_lightning as pl
@@ -117,7 +121,7 @@ def main(
         settings=wandb.Settings(code_dir="."),
         offline=offline,
         name=experiment_name,
-        entity="puzzle_diff_academic",
+        # entity="puzzle_diff_academic",
         tags=tags,
         id=wandb_id if wandb_id else None,
         resume="must" if wandb_id else None,
@@ -126,11 +130,14 @@ def main(
     checkpoint_callback = ModelCheckpoint(
         monitor="rmse_t_AVG", mode="min", save_top_k=2, save_last=True
     )
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.initialize_torchmetrics(train_dt.dataset.used_categories)
+    model.to(device)
     trainer = pl.Trainer(
         accelerator="gpu",
         devices=gpus,
-        strategy="ddp" if gpus > 1 else None,
+        # strategy="ddp" if gpus > 1 else None,
+        strategy="auto",
         max_epochs=max_epochs,
         check_val_every_n_epoch=5,
         logger=wandb_logger,
@@ -150,7 +157,8 @@ def main(
         model.save_eval_images = True
         trainer.test(model, dl_test)
     else:
-        trainer.fit(model, dl_train, dl_test, ckpt_path=checkpoint_path)
+        trainer.fit(model, dl_train)
+        # trainer.fit(model, dl_train, dl_test, ckpt_path=checkpoint_path)
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
@@ -188,6 +196,10 @@ if __name__ == "__main__":
     ap.add_argument("--missing", type=int, default=0)
 
     args = ap.parse_args()
+
+    # args.category = 
+    # args.wandb_id = 'train1'
+    args.num_workers = 0
     print(args)
     main(
         batch_size=args.batch_size,

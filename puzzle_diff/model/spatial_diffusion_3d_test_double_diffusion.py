@@ -25,6 +25,7 @@ import trimesh
 
 from .distributions import IsotropicGaussianSO3
 from pytorch3d.transforms import matrix_to_quaternion, quaternion_to_matrix, matrix_to_euler_angles
+# from .rotation_conversions import matrix_to_quaternion, quaternion_to_matrix, matrix_to_euler_angles
 
 
 # from .network_modules import (
@@ -1012,7 +1013,7 @@ class GNN_Diffusion(pl.LightningModule):
             self.log_dict(self.metrics, prog_bar=True, on_step=False, on_epoch=True)
         # return accuracy_dict
 
-    def validation_epoch_end(self, outputs) -> None:
+    def validation_epoch_end1(self, outputs) -> None:
         metrics = {"rmse_t", "rmse_r", "gd_r", "part_acc"}
         metrics_names = set(self.metrics) - {
             "rmse_t_AVG",
@@ -1031,7 +1032,7 @@ class GNN_Diffusion(pl.LightningModule):
         self.log_dict(self.avg_metrics, prog_bar=True, on_step=False, on_epoch=True)
 
     def test_epoch_end(self, outputs) -> None:
-        return self.validation_epoch_end(outputs)
+        return self.validation_epoch_end1(outputs)
 
     def test_step(self, batch, batch_idx):
         with torch.no_grad():
